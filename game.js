@@ -6,8 +6,7 @@ const playerNameEl = document.getElementById("player-name");
 const playerNameTextEl = document.querySelector(".player-name-text");
 const levelInfoEl = document.getElementById("level-info");
 const levelTextEl = document.querySelector(".level-text");
-const meteorCountEl = document.getElementById("meteor-count");
-const bossCountEl = document.getElementById("boss-count");
+// Removed meteorCountEl and bossCountEl
 const startScreen = document.getElementById("start-screen");
 const victoryScreen = document.getElementById("victory-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
@@ -50,6 +49,11 @@ let levelConfig = {
   3: { meteors: 100, bosses: 3, difficulty: "hard" }
 };
 
+// --- Boss System Variables ---
+let bossThresholds = [];
+let bossSpawned = [];
+let isBossActive = false;
+
 const finalBossExplosionSound = new Audio("final_boss_explosion.mp3");
 
 // --- Local Storage Functions ---
@@ -74,10 +78,7 @@ function updateLevelDisplay() {
   levelTextEl.textContent = `Level ${currentLevel}`;
 }
 
-function updateProgressDisplay() {
-  meteorCountEl.textContent = `Meteors: ${meteorDestroyed}/${totalMeteorsRequired}`;
-  bossCountEl.textContent = `Bosses: ${bossDestroyed}/${totalBossesInLevel}`;
-}
+// Removed updateProgressDisplay
 
 // --- Load Images ---
 const spaceshipImg = new Image();
@@ -106,8 +107,8 @@ function showStartScreen() {
   scoreEl.style.display = "none";
   playerNameEl.style.display = "none";
   levelInfoEl.style.display = "none";
-  meteorCountEl.style.display = "none";
-  bossCountEl.style.display = "none";
+  // meteorCountEl.style.display = "none";
+  // bossCountEl.style.display = "none";
   canvas.style.display = "none";
   
   // Load saved name and populate input
@@ -124,8 +125,8 @@ function showGame() {
   scoreEl.style.display = "block";
   updatePlayerNameDisplay();
   levelInfoEl.style.display = "flex";
-  meteorCountEl.style.display = "block";
-  bossCountEl.style.display = "block";
+  // meteorCountEl.style.display = "block";
+  // bossCountEl.style.display = "block";
   canvas.style.display = "block";
 }
 
@@ -134,8 +135,8 @@ function showVictory() {
   scoreEl.style.display = "none";
   playerNameEl.style.display = "none";
   levelInfoEl.style.display = "none";
-  meteorCountEl.style.display = "none";
-  bossCountEl.style.display = "none";
+  // meteorCountEl.style.display = "none";
+  // bossCountEl.style.display = "none";
   canvas.style.display = "none";
   
   // Show/hide next level button
@@ -151,8 +152,8 @@ function showGameOver() {
   scoreEl.style.display = "none";
   playerNameEl.style.display = "none";
   levelInfoEl.style.display = "none";
-  meteorCountEl.style.display = "none";
-  bossCountEl.style.display = "none";
+  // meteorCountEl.style.display = "none";
+  // bossCountEl.style.display = "none";
   canvas.style.display = "none";
   
   // Update failed stats
@@ -209,11 +210,22 @@ function startLevel(level) {
   alienTimer = 0;
   alienInterval = 60;
   finalBossDefeated = false;
-  
+
+  // Set boss thresholds for this level
+  if (level === 1) {
+    bossThresholds = [20];
+  } else if (level === 2) {
+    bossThresholds = [27, 54];
+  } else if (level === 3) {
+    bossThresholds = [33, 66, 99];
+  }
+  bossSpawned = bossThresholds.map(() => false);
+  isBossActive = false;
+
   // Update displays
   updateLevelDisplay();
-  updateProgressDisplay();
-  
+  // updateProgressDisplay();
+
   showGame();
   bgMusic.currentTime = 0;
   bgMusic.pause();
@@ -328,37 +340,35 @@ function drawExplosion(explosion) {
 
 // --- Spawning ---
 function spawnAlien() {
-  // Check if we need more final bosses
-  const currentFinalBosses = aliens.filter(a => a.isFinalBoss).length;
-  const finalBossesNeeded = totalBossesInLevel - bossDestroyed;
-  
-  if (finalBossesNeeded > currentFinalBosses && meteorDestroyed >= totalMeteorsRequired * 0.7) {
+  // Boss spawn logic based on meteorDestroyed
+  let bossToSpawn = -1;
+  for (let i = 0; i < bossThresholds.length; i++) {
+    if (!bossSpawned[i] && meteorDestroyed >= bossThresholds[i] && !isBossActive) {
+      bossToSpawn = i;
+      break;
+    }
+  }
+  if (bossToSpawn !== -1) {
+    // Spawn boss
     const size = 200;
     const x = gameWidth / 2;
     const y = -100;
     const speed = 0.7;
     const color = "#ff00ff";
     aliens.push({ x, y, size, speed, color, isFinalBoss: true, hp: 10 });
+    isBossActive = true;
+    bossSpawned[bossToSpawn] = true;
     return;
   }
-  
-  // Boss meteor appears every 10th alien
-  if (score > 0 && score % 10 === 0 && !aliens.some((a) => a.isBoss)) {
-    const size = 140;
+  // Only spawn regular meteors if no boss is active
+  if (!isBossActive) {
+    const size = 64 + Math.random() * 64;
     const x = size + Math.random() * (gameWidth - size * 2);
     const y = -size;
-    const speed = 1.2;
-    const color = "#ff4444";
-    aliens.push({ x, y, size, speed, color, isBoss: true, hp: 3 });
-    return;
+    const speed = 1 + Math.random() * 1.2;
+    const color = "#fff";
+    aliens.push({ x, y, size, speed, color });
   }
-  
-  const size = 64 + Math.random() * 64;
-  const x = size + Math.random() * (gameWidth - size * 2);
-  const y = -size;
-  const speed = 1 + Math.random() * 1.2;
-  const color = "#fff";
-  aliens.push({ x, y, size, speed, color });
 }
 
 // Add this helper to show a CSS explosion overlay
@@ -442,7 +452,7 @@ function gameLoop() {
           flashAlpha = Math.max(flashAlpha, 0.15);
           if (a.hp <= 0) {
             bossDestroyed++;
-            updateProgressDisplay();
+            // updateProgressDisplay();
             explosions.push({
               x: a.x,
               y: a.y,
@@ -452,7 +462,7 @@ function gameLoop() {
             });
             aliens.splice(i, 1);
             showBossExplosionOverlay();
-            
+            isBossActive = false;
             // Check if level is completed after boss defeat
             if (meteorDestroyed >= totalMeteorsRequired && bossDestroyed >= totalBossesInLevel) {
               setTimeout(() => {
@@ -462,33 +472,9 @@ function gameLoop() {
             }
           }
           break;
-        } else if (a.isBoss) {
-          a.hp--;
-          bullets.splice(j, 1);
-          if (a.hp <= 0) {
-            meteorDestroyed++;
-            updateProgressDisplay();
-            explosions.push({
-              x: a.x,
-              y: a.y,
-              radius: a.size / 2,
-              color: a.color,
-              alpha: 1,
-            });
-            aliens.splice(i, 1);
-            score++;
-            
-            // Check if level is completed after meteor defeat
-            if (meteorDestroyed >= totalMeteorsRequired && bossDestroyed >= totalBossesInLevel) {
-              setTimeout(() => {
-                endGame();
-              }, 500);
-              return;
-            }
-          }
         } else {
           meteorDestroyed++;
-          updateProgressDisplay();
+          // updateProgressDisplay();
           explosions.push({
             x: a.x,
             y: a.y,
@@ -499,7 +485,6 @@ function gameLoop() {
           aliens.splice(i, 1);
           bullets.splice(j, 1);
           score++;
-          
           // Check if level is completed after meteor defeat
           if (meteorDestroyed >= totalMeteorsRequired && bossDestroyed >= totalBossesInLevel) {
             setTimeout(() => {
@@ -587,7 +572,14 @@ playerNameInput.addEventListener("keypress", (e) => {
 // Button event handlers
 startBtn.onclick = startGame;
 nextLevelBtn.onclick = () => startLevel(currentLevel + 1);
-restartBtn.onclick = () => startLevel(currentLevel);
+restartBtn.onclick = () => {
+  if (currentLevel >= 3) {
+    // If level 3 is completed, restart from level 1
+    startLevel(1);
+  } else {
+    startLevel(currentLevel);
+  }
+};
 retryBtn.onclick = () => startLevel(currentLevel);
 menuBtn.onclick = showStartScreen;
 
