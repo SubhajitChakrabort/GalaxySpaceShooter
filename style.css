@@ -90,6 +90,13 @@ html {
   font-size: 1.3rem;
 }
 
+.info-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+
 #progress-info {
   display: flex;
   flex-direction: row;
@@ -311,64 +318,58 @@ html {
 @media (max-width: 600px) {
   #player-info {
     flex-direction: row;
-    gap: 6px;
-    flex-wrap: nowrap;
+    gap: 3px;
+    left: 10px;
+    top: 10px;
     max-width: calc(100vw - 20px);
+    flex-wrap: wrap;
     overflow-x: auto;
   }
   
+  .info-row {
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  
   #player-name {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     padding: 3px 6px;
     gap: 3px;
     height: 24px;
-    flex-shrink: 0;
-    min-width: 60px;
-    margin-right: 4px;
+    min-width: 70px;
   }
   
   .player-icon {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
   
   .player-name-text {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   
   #level-info {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     padding: 3px 6px;
     height: 24px;
-    flex-shrink: 0;
-    min-width: 50px;
-    margin-right: 4px;
+    min-width: 55px;
   }
   
   .level-text {
-    font-size: 0.8rem;
-  }
-  
-  #progress-info {
-    gap: 5px;
-    flex-shrink: 0;
-    margin-right: 4px;
+    font-size: 0.85rem;
   }
   
   #meteor-count, #boss-count {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     padding: 3px 6px;
     height: 24px;
-    flex-shrink: 0;
     min-width: 70px;
-    margin-right: 4px;
   }
   
   #score {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     padding: 3px 6px;
     height: 24px;
-    flex-shrink: 0;
-    min-width: 60px;
+    min-width: 65px;
   }
 
   .name-input-container input {
@@ -398,19 +399,28 @@ html {
 
 @media (max-width: 400px) {
   #player-info {
-    gap: 4px;
-    flex-wrap: nowrap;
+    gap: 3px;
+    left: 8px;
+    top: 8px;
+    max-width: calc(100vw - 16px);
+    flex-wrap: wrap;
     overflow-x: auto;
-    max-width: calc(100vw - 10px);
+  }
+  
+  .info-row {
+    gap: 3px;
+    flex-wrap: wrap;
   }
   
   #player-name {
     font-size: 0.7rem;
     padding: 2px 4px;
     height: 20px;
-    flex-shrink: 0;
     min-width: 50px;
-    margin-right: 4px;
+  }
+  
+  .player-icon {
+    font-size: 0.65rem;
   }
   
   .player-name-text {
@@ -421,9 +431,7 @@ html {
     font-size: 0.7rem;
     padding: 2px 4px;
     height: 20px;
-    flex-shrink: 0;
-    min-width: 40px;
-    margin-right: 4px;
+    min-width: 45px;
   }
   
   .level-text {
@@ -431,20 +439,17 @@ html {
   }
   
   #meteor-count, #boss-count {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     padding: 2px 4px;
     height: 20px;
-    flex-shrink: 0;
-    min-width: 55px;
-    margin-right: 4px;
+    min-width: 60px;
   }
   
   #score {
     font-size: 0.7rem;
     padding: 2px 4px;
     height: 20px;
-    flex-shrink: 0;
-    min-width: 50px;
+    min-width: 55px;
   }
 
   .name-input-container input {
