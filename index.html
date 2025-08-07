@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galaxy Blaster</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Nunito:800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Video Background -->
+    <video id="bg-video" autoplay loop muted playsinline>
+      <source src="1123.mp4" type="video/mp4" />
+    </video>
+    <!-- Game UI -->
+    <div id="game-container">
+      <div id="player-info">
+        <div id="player-name">
+          <span class="player-icon">👤</span>
+          <span class="player-name-text"></span>
+        </div>
+        <div id="level-info">
+          <span class="level-text">Level 1</span>
+        </div>
+        <div id="progress-info">
+          <div id="meteor-count">Meteors: 0/35</div>
+          <div id="boss-count">Bosses: 0/1</div>
+        </div>
+        <div id="score">Score: 0</div>
+      </div>
+      <canvas id="game-canvas"></canvas>
+      <div id="start-screen" class="overlay">
+        <h1><b>Galaxy Blaster Jr.</b></h1>
+        <div class="name-input-container">
+          <label for="player-name-input">Enter Your Name:</label>
+          <input type="text" id="player-name-input" placeholder="Your Name" maxlength="20">
+        </div>
+        <button id="start-btn">Start Game</button>
+      </div>
+      <div id="victory-screen" class="overlay" style="display: none">
+        <h1><b>Level Complete!</b></h1>
+        <p><b>You are our hero!</b></p>
+        <button id="next-level-btn">Next Level</button>
+        <button id="restart-btn">Play Again</button>
+      </div>
+      <div id="game-over-screen" class="overlay" style="display: none">
+        <h1><b>Level Failed</b></h1>
+        <div id="failed-stats">
+          <p>Meteors Destroyed: <span id="failed-meteor-count">0</span></p>
+          <p>Bosses Defeated: <span id="failed-boss-count">0</span></p>
+        </div>
+        <button id="retry-btn">Retry Level</button>
+        <button id="menu-btn">Back to Menu</button>
+      </div>
+    </div>
+    <audio id="bg-music" src="bg-music.mp3" loop></audio>
+    <audio id="background-song" src="background_song.mp3" loop></audio>
+    <script src="game.js"></script>
+  </body>
+</html>
