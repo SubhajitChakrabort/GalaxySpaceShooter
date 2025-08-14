@@ -37,6 +37,12 @@ let slowMotionFactor = 1;
 let finalBossDefeated = false;
 let playerName = "";
 
+// --- Life System Variables ---
+let playerLives = 3;
+let isInvulnerable = false;
+let invulnerabilityTimer = 0;
+let invulnerabilityDuration = 120; // 2 seconds at 60fps
+
 // --- Level System Variables ---
 let currentLevel = 1;
 let meteorDestroyed = 0;
@@ -78,6 +84,41 @@ function updateLevelDisplay() {
   levelTextEl.textContent = `Level ${currentLevel}`;
 }
 
+// --- Life System Functions ---
+function updateLivesDisplay() {
+  const livesContainer = document.getElementById("lives-container");
+  if (livesContainer) {
+    livesContainer.innerHTML = "";
+    for (let i = 0; i < playerLives; i++) {
+      const heart = document.createElement("span");
+      heart.innerHTML = "❤️";
+      heart.style.fontSize = "1.5rem";
+      heart.style.marginRight = "5px";
+      livesContainer.appendChild(heart);
+    }
+  }
+}
+
+function loseLife() {
+  if (isInvulnerable) return;
+  
+  playerLives--;
+  updateLivesDisplay();
+  
+  // Make player invulnerable temporarily
+  isInvulnerable = true;
+  invulnerabilityTimer = invulnerabilityDuration;
+  
+  // Visual feedback
+  screenShake = Math.max(screenShake, 15);
+  flashAlpha = Math.max(flashAlpha, 0.3);
+  
+  if (playerLives <= 0) {
+    // Game over
+    endGame();
+  }
+}
+
 // Removed updateProgressDisplay
 
 // --- Load Images ---
@@ -111,6 +152,12 @@ function showStartScreen() {
   // bossCountEl.style.display = "none";
   canvas.style.display = "none";
   
+  // Hide lives container on start screen
+  const livesContainer = document.getElementById("lives-container");
+  if (livesContainer) {
+    livesContainer.style.display = "none";
+  }
+  
   // Load saved name and populate input
   const savedName = loadPlayerName();
   if (savedName) {
@@ -128,6 +175,13 @@ function showGame() {
   // meteorCountEl.style.display = "block";
   // bossCountEl.style.display = "block";
   canvas.style.display = "block";
+  
+  // Show and update lives display
+  const livesContainer = document.getElementById("lives-container");
+  if (livesContainer) {
+    livesContainer.style.display = "flex";
+  }
+  updateLivesDisplay();
 }
 
 function showVictory() {
@@ -138,6 +192,12 @@ function showVictory() {
   // meteorCountEl.style.display = "none";
   // bossCountEl.style.display = "none";
   canvas.style.display = "none";
+  
+  // Hide lives container
+  const livesContainer = document.getElementById("lives-container");
+  if (livesContainer) {
+    livesContainer.style.display = "none";
+  }
   
   // Show/hide next level button
   if (currentLevel < 3) {
@@ -156,9 +216,184 @@ function showGameOver() {
   // bossCountEl.style.display = "none";
   canvas.style.display = "none";
   
+  // Hide lives container
+  const livesContainer = document.getElementById("lives-container");
+  if (livesContainer) {
+    livesContainer.style.display = "none";
+  }
+  
   // Update failed stats
   failedMeteorCountEl.textContent = meteorDestroyed;
   failedBossCountEl.textContent = bossDestroyed;
+}
+
+function showLevelCompleteModal() {
+  // Create modal overlay
+  const modal = document.createElement("div");
+  modal.id = "level-complete-modal";
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 8, 20, 0.9);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    font-family: "Orbitron", sans-serif;
+  `;
+  
+  // Create modal content
+  const content = document.createElement("div");
+  content.style.cssText = `
+    background: rgba(0, 8, 20, 0.95);
+    border: 3px solid #00ff88;
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 0 30px #00ff88;
+    max-width: 500px;
+    width: 90%;
+  `;
+  
+  // Level completion message
+  const title = document.createElement("h1");
+  title.textContent = `Level ${currentLevel} Complete!`;
+  title.style.cssText = `
+    color: #00ff88;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 15px #00ff88;
+  `;
+  
+  const message = document.createElement("p");
+  message.textContent = `Congratulations! You have successfully completed Level ${currentLevel}!`;
+  message.style.cssText = `
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  `;
+  
+  // Stats
+  const stats = document.createElement("div");
+  stats.style.cssText = `
+    background: rgba(0, 255, 136, 0.1);
+    border: 2px solid #00ff88;
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  `;
+  
+  const meteorsStat = document.createElement("p");
+  meteorsStat.innerHTML = `Meteors Destroyed: <span style="color: #00ff88; font-weight: bold;">${meteorDestroyed}</span>`;
+  meteorsStat.style.cssText = "color: #fff; margin: 0.5rem 0; font-size: 1.1rem;";
+  
+  const bossesStat = document.createElement("p");
+  bossesStat.innerHTML = `Bosses Defeated: <span style="color: #00ff88; font-weight: bold;">${bossDestroyed}</span>`;
+  bossesStat.style.cssText = "color: #fff; margin: 0.5rem 0; font-size: 1.1rem;";
+  
+  const scoreStat = document.createElement("p");
+  scoreStat.innerHTML = `Score: <span style="color: #00ff88; font-weight: bold;">${score}</span>`;
+  scoreStat.style.cssText = "color: #fff; margin: 0.5rem 0; font-size: 1.1rem;";
+  
+  stats.appendChild(meteorsStat);
+  stats.appendChild(bossesStat);
+  stats.appendChild(scoreStat);
+  
+  // Buttons container
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.style.cssText = `
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  `;
+  
+  // Next level button
+  const nextLevelBtn = document.createElement("button");
+  nextLevelBtn.textContent = currentLevel < 3 ? "Next Level" : "Play Again";
+  nextLevelBtn.style.cssText = `
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #00ff88, #00c4ff);
+    color: #000;
+    font-family: "Orbitron", sans-serif;
+    cursor: pointer;
+    box-shadow: 0 0 15px #00ff88;
+    transition: all 0.3s ease-in-out;
+    font-weight: bold;
+  `;
+  
+  nextLevelBtn.onmouseover = () => {
+    nextLevelBtn.style.transform = "scale(1.05)";
+    nextLevelBtn.style.boxShadow = "0 0 20px #00ff88";
+  };
+  
+  nextLevelBtn.onmouseout = () => {
+    nextLevelBtn.style.transform = "scale(1)";
+    nextLevelBtn.style.boxShadow = "0 0 15px #00ff88";
+  };
+  
+  nextLevelBtn.onclick = () => {
+    document.body.removeChild(modal);
+    if (currentLevel < 3) {
+      startLevel(currentLevel + 1);
+    } else {
+      startLevel(1);
+    }
+  };
+  
+  // Menu button
+  const menuBtn = document.createElement("button");
+  menuBtn.textContent = "Main Menu";
+  menuBtn.style.cssText = `
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #ff6b6b, #ffa500);
+    color: #fff;
+    font-family: "Orbitron", sans-serif;
+    cursor: pointer;
+    box-shadow: 0 0 15px #ff6b6b;
+    transition: all 0.3s ease-in-out;
+    font-weight: bold;
+  `;
+  
+  menuBtn.onmouseover = () => {
+    menuBtn.style.transform = "scale(1.05)";
+    menuBtn.style.boxShadow = "0 0 20px #ff6b6b";
+  };
+  
+  menuBtn.onmouseout = () => {
+    menuBtn.style.transform = "scale(1)";
+    menuBtn.style.boxShadow = "0 0 15px #ff6b6b";
+  };
+  
+  menuBtn.onclick = () => {
+    document.body.removeChild(modal);
+    showStartScreen();
+  };
+  
+  buttonsContainer.appendChild(nextLevelBtn);
+  buttonsContainer.appendChild(menuBtn);
+  
+  // Assemble modal
+  content.appendChild(title);
+  content.appendChild(message);
+  content.appendChild(stats);
+  content.appendChild(buttonsContainer);
+  modal.appendChild(content);
+  
+  // Add to page
+  document.body.appendChild(modal);
 }
 
 // --- Game Logic ---
@@ -210,6 +445,11 @@ function startLevel(level) {
   alienTimer = 0;
   alienInterval = 60;
   finalBossDefeated = false;
+  
+  // Reset life system
+  playerLives = 3;
+  isInvulnerable = false;
+  invulnerabilityTimer = 0;
 
   // Set boss thresholds for this level
   if (level === 1) {
@@ -242,7 +482,7 @@ function endGame() {
   // Check if level is completed
   if (meteorDestroyed >= totalMeteorsRequired && bossDestroyed >= totalBossesInLevel) {
     // Level completed successfully
-    showVictory();
+    showLevelCompleteModal();
   } else {
     // Level failed
     showGameOver();
@@ -253,6 +493,12 @@ function endGame() {
 function drawSpaceship() {
   ctx.save();
   ctx.translate(spaceship.x, spaceship.y);
+  
+  // Invulnerability effect - flicker when invulnerable
+  if (isInvulnerable && Math.floor(invulnerabilityTimer / 10) % 2 === 0) {
+    ctx.globalAlpha = 0.5;
+  }
+  
   if (spaceshipImg.complete && spaceshipImg.naturalWidth > 0) {
     ctx.drawImage(
       spaceshipImg,
@@ -405,6 +651,14 @@ function gameLoop() {
     slowMotionFactor = 1;
   }
   
+  // Handle invulnerability
+  if (isInvulnerable) {
+    invulnerabilityTimer--;
+    if (invulnerabilityTimer <= 0) {
+      isInvulnerable = false;
+    }
+  }
+  
   // Screen shake effect
   if (screenShake > 0) {
     ctx.save();
@@ -434,6 +688,23 @@ function gameLoop() {
     a.y += a.speed * slowMotionFactor;
     drawAlien(a);
     if (a.y > gameHeight + a.size) aliens.splice(i, 1);
+  }
+
+  // Check spaceship collision with meteors
+  if (!isInvulnerable && spaceship) {
+    for (let i = aliens.length - 1; i >= 0; i--) {
+      const a = aliens[i];
+      const dx = spaceship.x - a.x;
+      const dy = spaceship.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < (spaceship.w / 2 + a.size * 0.8)) {
+        // Collision detected - lose life
+        loseLife();
+        // Remove the meteor that hit the spaceship
+        aliens.splice(i, 1);
+        break;
+      }
+    }
   }
 
   // Collisions (bullets vs aliens)
